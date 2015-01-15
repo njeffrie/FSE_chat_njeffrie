@@ -1,0 +1,87 @@
+<!-- @file index.html
+     @brief html and client side javascript to power chat server for 18652
+     assignment 1.  Some original inspiration from Node.js tutorial, but
+     almost completely revamped for additional features and look
+     @author Nat Jeffries
+-->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; background: rgb(230, 250, 255); }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 84%; }
+      form button { width: 7.5%; background: rgb(130, 224, 255); border: none; padding: 10px; margin-left: .5%; }
+      #messages { list-style-type: none; margin: 1%; padding: 0px; width: 98%; height: 100%;  border-width: 2px; border-color: 'black'; background-color: #fff; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #messages li:nth-child(even) { background: #fff; }
+      #alert { margin: 25%; background: rgb(255, 255, 255); width: 50%; font-size: 23px; }
+    </style>
+
+    <h1> 18-652 Chat Room </h1>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <div id="startup_msg">
+      <p id="alert">
+        Please enter a name and hit "Set UID"
+      </p>
+    </div>
+    <form action="">
+      <input id="m" autocomplete="off" /><button onclick="sendMsg()">Send</button><button onclick="setUid()">Set UID</button>
+    </form>
+    
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      var uid = "anonymous";
+      var setingUid = false;
+      $('form').submit(function(){
+        var msg = $('#m').val();
+        msg = uid.concat(": ", msg);
+        if (settingUid == true){
+          settingUid = false;
+          return false;
+        }
+        if ($('#m').val() != ""){
+          socket.emit('chat message', msg);
+          $('#m').val('');
+        }  
+        return false;
+      });
+      socket.on('chat message', function(msg){
+        var hour = String(new Date().getHours());
+        var minute = String(new Date().getMinutes());
+        var timeDate = "[";
+        timeDate = timeDate.concat(hour, ":", minute, "] ");
+        msg = timeDate.concat(msg);
+        $('#messages').append($('<li>').text(msg));
+      });
+      function sendMsg(){
+        console.log("sending message");
+        var msg = $('#m').val();
+        msg = uid.concat(": ", msg);
+        if ($('#m').val() != ""){
+          socket.emit('chat message', msg);
+          $('#m').val('');
+        }
+      }
+      function setUid(){
+        settingUid = true;
+        console.log("setting uid");
+        var userinput = $('#m').val();
+        if (userinput != ""){
+          uid = userinput;
+          $('#m').val('');
+          var control = document.getElementById("startup_msg");
+          control.style.visibility = "hidden";
+        }
+      }
+    </script>
+  </body>
+</html>
